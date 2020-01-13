@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Edit a Product</title>
+    <meta charset="utf-8"/>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/photon.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+    <div id="modal_product">
+            <div class="wrap">
+                <form class="pane-body">
+                    <h3>Edit a Product</h3>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="Code" id="code" min="1001" max="9999" minlength="4" maxlength="4" title="only 4 numbers, 1001 to 9999" required/>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Name" id="name" pattern="^[A-Za-z0-9 ]{3,30}$" title="Only letters and numbers, 3 to 30 characters" required/>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="Price" id="price" min="5000" max="100000" title="$5 000 to $100 000 CAD" required/>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="Quantity" id="quantity" min="1" max="20" title="1 to 20" required/>
+                    </div>
+                    <button type="button" class="btn btn-large btn-negative" id="btnCancel">Cancel</button>
+                    <button type="submit" class="btn btn-large btn-positive" id="btnSubmit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+
+        <script>
+            const electron = require('electron')
+            const {ipcRenderer} = electron
+            const form = document.querySelector('form');
+            form.addEventListener('submit', submitForm);
+            
+            let productId = '';
+            ipcRenderer.on('product: initial', function(e, obj){
+            // console.log(items);
+                productId = obj[0].id;
+                document.getElementById('code').value = obj[0].code;
+                document.getElementById('name').value = obj[0].name;
+                document.getElementById('price').value = obj[0].price;
+                document.getElementById('quantity').value = obj[0].quantity;
+            });     
+
+            function submitForm(e) {
+                e.preventDefault();
+      
+                let obj = {
+                    id: productId,
+                    code: document.querySelector('#code').value,
+                    name: document.querySelector('#name').value,
+                    price: document.querySelector('#price').value,
+                    quantity: document.querySelector('#quantity').value,
+                };
+                ipcRenderer.send('product:update', obj);
+            }
+
+            // Cancel edit window
+            const remote = require('electron').remote;
+            document.querySelector('#btnCancel').addEventListener('click', function(e){
+                e.preventDefault();
+                var window = remote.getCurrentWindow();
+                window.close()
+            })
+        </script>
+    </body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sales Control</title>
+    <link rel="stylesheet" href="css/photon.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div class="window">
+         <!-- Menu -->
+        <header class="toolbar toolbar-header" id="backgroundToolbar">
+            <h1 class="title" id="title">Products</h1>
+            <div class="toolbar-actions" id="groupBtn">
+                <div class="btn-group" id="backgroundBtnGoup">
+                    <a class="btn btn-default" href="mainwindow.html" id="btnTAB">
+                        <span class="fa fa-address-book"></span>
+                        CLIENTS
+                    </a>
+                    <a class="btn btn-default active" href="productswindow.html" id="btnTAB">
+                        <span class="fa fa-shopping-bag"></span>
+                        PRODUCTS
+                    </a>
+                    <a class="btn btn-default" href="saleswindow.html" id="btnTAB">
+                        <span class="fa fa-shopping-basket"></span>
+                        SALES
+                    </a>
+                </div>
+
+                <button class="btn btn-default btn-default" style="position: absolute;right:0" id="btnAddProduct">
+                    <span class="fa fa-tag"></span>
+                    ADD PRODUCT
+                </button>
+            </div>
+        </header>
+
+        <div class="window-content" id="backgroundWindowsContent">
+            <div class="pane-group" id="backgroundPaneGroup">
+                <div class="pane" id="backgroundPane">
+                    <table class="table table-striped" id="backgroundLightColor">
+                        <thead>
+                            <tr id="backgroundTR">
+                                <th id="backgroundTR">Product Code</th>
+                                <th id="backgroundTR">Name</th>
+                                <th id="backgroundTR">Price</th>
+                                <th id="backgroundTR">Quantity</th>
+                                <th id="backgroundTR"></th>
+                                <th id="backgroundTR"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const electron = require('electron')
+        const {ipcRenderer} = electron
+        const sqlite3 = require('sqlite3');
+
+        const knex = require('knex')({
+            client: 'sqlite3',
+            connection: {
+                filename: './salescontrol.db'
+            },
+            useNullAsDefault: true
+        });
+
+       
+        const findProducts = async(req, res) => {
+            try {
+                let result = knex.select().from("products")
+                return result;
+            } catch(e) {
+                console.error(e);
+            };
+        }
+
+        findProducts().then((rows) => {
+          displayProducts(rows);
+        })
+
+
+        function displayProducts(rows) {
+            const tbody = document.getElementById('tbody');
+            const tbodyInit = document.getElementsByTagName('tbody')[0];
+            tbodyInit.innerHTML = '';
+
+            for(var i = 0; i < rows.length; i ++) {
+              const tr = document.createElement('tr');
+              let keyArr = ['code', 'name', 'price', 'quantity'];
+              for(var j = 0; j < keyArr.length; j++) {
+                const itemText = document.createTextNode(rows[i][keyArr[j]]);
+                const td = document.createElement('td');
+                td.appendChild(itemText);
+                tr.appendChild(td);
+              }
+              const tdEditProduct = document.createElement('td');
+              const editProductButton = document.createElement("button");
+              editProductButton.innerHTML = 'Edit';
+              editProductButton.className = 'btn btn-primary edit-btn';
+              editProductButton.setAttribute("id", `${rows[i]['id']}`);
+              tdEditProduct.appendChild(editProductButton);
+              tr.appendChild(tdEditProduct);
+              tbody.appendChild(tr);
+
+              const tdDeleteProduct = document.createElement('td');
+              const deleteProductButton = document.createElement("button");
+              deleteProductButton.innerHTML = 'Del';
+              deleteProductButton.className = 'btn btn-negative del-btn';
+              deleteProductButton.setAttribute("id", `${rows[i]['id']}`);
+              tdDeleteProduct.appendChild(deleteProductButton);
+              tr.appendChild(tdDeleteProduct);
+              tbody.appendChild(tr);
+          }
+
+          // Edit a product
+          let editProductButtons = document.getElementsByClassName('edit-btn');
+          for(var i = 0; i < editProductButtons.length; i++) {
+              editProductButtons[i].addEventListener('click', (e) => {
+                //console.log(e.target.id)
+                ipcRenderer.send('product:editbyId', e.target.id);
+              });
+          }
+
+          // Delete a product
+          let delProductButtons = document.getElementsByClassName('del-btn');
+          for(var i = 0; i < delProductButtons.length; i++) {
+            delProductButtons[i].addEventListener('click', (e) => {
+              const confirmRes = confirm("Are you sure?");
+              if(confirmRes) {
+                ipcRenderer.send('product:deletebyId', e.target.id);
+              }
+            });
+          }
+        }
+      
+        // Display products after adding a new product
+        ipcRenderer.on('product:add', function(e, rows){
+          displayProducts(rows);
+          })
+
+        // Open addProductWindow
+        document.querySelector('#btnAddProduct').addEventListener('click', function(){
+          ipcRenderer.send('product:add', true);
+        })
+    
+    
+    </script>
+</body>
+</html>

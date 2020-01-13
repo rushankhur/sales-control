@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Edit Price</title>
+    <meta charset="utf-8"/>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/photon.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+    <div id="modal_sale">
+            <div class="wrap">
+                <form id='formEditSale' action="" class="pane-body">
+                    <h3>Edit Price</h3>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="Price" id="price" min="5000" max="100000" required/>
+                    </div>
+                    <button type="button" class="btn btn-large btn-negative" id="btnCancel">Cancel</button>
+                    <button type="submit" class="btn btn-large btn-positive" id="btnSubmit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const electron = require('electron')
+            const {ipcRenderer} = electron
+            
+            const form = document.querySelector('form');
+            form.addEventListener('submit', submitForm);
+
+            // Catch initial values for editing
+            let saleId = '';
+            let quantityValue = '';
+            ipcRenderer.on('sale: initial', function(e, obj){
+                saleId = obj[0].id;
+                quantityValue = obj[0].quantity;
+                document.getElementById('price').value = obj[0].price;
+            });     
+
+            function submitForm(e) {
+                e.preventDefault();
+                const priceValue = document.querySelector('#price').value;
+                const totalPrice = priceValue * quantityValue;
+
+                let obj = {
+                    id: saleId,
+                    price: priceValue,
+                    total: totalPrice
+                };
+                console.log(obj)
+                ipcRenderer.send('sale:update', obj);
+            }
+
+            // Cancel edit window
+            const remote = require('electron').remote;
+            document.querySelector('#btnCancel').addEventListener('click', function(e){
+                e.preventDefault();
+                var window = remote.getCurrentWindow();
+                window.close()
+            })
+        </script>
+    </body>
+</html>

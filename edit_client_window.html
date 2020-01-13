@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Edit a Client</title>
+    <meta charset="utf-8"/>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/photon.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+    <div id="modal_client">
+            <div class="wrap">
+                <form class="pane-body">
+                    <h3>Edit a Client</h3>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Name" id="name" pattern="^[A-Za-z0-9 ]{2,30}$" title="Only letters and numbers, 2 to 30 characters" required/>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" class="form-control" placeholder="Phone Number" id="phone" pattern="\d{3}[\-]\d{3}[\-]\d{4}" title="Example: 123-456-7890" required/>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" class="form-control" placeholder="Email" id="email" required/>
+                    </div>
+                    <button type="button" class="btn btn-large btn-negative" id="btnCancel">Cancel</button>
+                    <button type="submit" class="btn btn-large btn-positive" id="btnSubmit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+
+        <script>
+            const electron = require('electron')
+            const {ipcRenderer} = electron
+            const form = document.querySelector('form');
+            form.addEventListener('submit', submitForm);
+            
+            let clientId = '';
+            ipcRenderer.on('client: initial', function(e, obj){
+            // console.log(items);
+                clientId = obj[0].id;
+                document.getElementById('name').value = obj[0].name;
+                document.getElementById('phone').value = obj[0].phone;
+                document.getElementById('email').value = obj[0].email;
+            });     
+
+            function submitForm(e) {
+                e.preventDefault();
+      
+                let obj = {
+                    id: clientId,
+                    name: document.querySelector('#name').value,
+                    phone: document.querySelector('#phone').value,
+                    email: document.querySelector('#email').value
+                };
+                ipcRenderer.send('client:update', obj);
+            }
+
+            // Cancel edit window
+            const remote = require('electron').remote;
+            document.querySelector('#btnCancel').addEventListener('click', function(e){
+                e.preventDefault();
+                var window = remote.getCurrentWindow();
+                window.close()
+            })
+        </script>
+    </body>
+</html>

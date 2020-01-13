@@ -1,0 +1,23 @@
+{
+  "name": "salescontrolapp",
+  "version": "1.0.0",
+  "description": "Sales Control App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "author": "Rushan Khuramshin",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^6.0.9",
+    "electron-reload": "^1.5.0",
+    "knex": "^0.19.5",
+    "postinstall": "^0.5.1",
+    "save": "^2.4.0",
+    "sqlite3": "^4.1.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^21.2.0"
+  }
+}

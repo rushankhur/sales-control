@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Add a Sale</title>
+    <meta charset="utf-8"/>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/photon.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+    <div id="modal_sale">
+            <div class="wrap">
+                <form class="pane-body">
+                    <h3>Add a Sale</h3>
+                    <div class="form-group">
+                        <select id="client" class="form-control" required>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="product" class="form-control" onChange="changePrice(this.value);" required>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="Price" id="price" min="5000" max="100000" title="$5 000 to $100 000 CAD" required/>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="Quantity" id="quantity" min="1" max="20" title="1 to 20" required/>
+                    </div>
+                    <button type="button" class="btn btn-large btn-negative" id="btnCancel">Cancel</button>
+                    <button type="submit" class="btn btn-large btn-positive" id="btnSubmit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const electron = require('electron')
+            const {ipcRenderer} = electron
+            const sqlite3 = require('sqlite3');
+
+            const knex = require('knex')({
+                client: 'sqlite3',
+                connection: {
+                    filename: './salescontrol.db'
+                },
+                useNullAsDefault: true
+            });
+
+            // Create a select menu with client names from 'clients' table
+            let clientsDropdown = document.getElementById("client");
+            clientsDropdown.innerHTML = "<option value='' disabled selected>Select a client</option>";
+            let clients = [];
+            knex.from("clients").select('name')
+                .then(function(rows){
+                    clients = rows.map(obj => obj.name);
+                    for (let i = 0; i < clients.length; i++) {
+                        clientsDropdown.innerHTML += "<option value'" + clients[i] + "'>" + clients[i] + "</option>";
+                    }
+                })
+                .catch((err) => { console.log( err); throw err })
+
+            // Create a select menu with products from 'products' table
+            let productsDropdown = document.getElementById("product");
+            productsDropdown.innerHTML = "<option value='' disabled selected>Select a product</option>";
+            let products = [];
+            knex.from("products").select('name')
+                .then(function(rows){
+                    products = rows.map(obj => obj.name);
+                    for (let i = 0; i < products.length; i++) {
+                        productsDropdown.innerHTML += "<option value'" + products[i] + "'>" + products[i] + "</option>";
+                    }
+                })
+                .catch((err) => { console.log( err); throw err })
+
+            // Change a price depending on a product    
+            function changePrice(value) {
+                knex.from("products").select('price').where("name", value)
+                .then(function(rows){
+                    const price = parseInt(rows.map(obj => obj.price));
+                    document.getElementById("price").value = price;
+                })
+                .catch((err) => { console.log( err); throw err })
+            }
+
+            const form = document.querySelector('form');
+            form.addEventListener('submit', submitForm);
+
+            function submitForm(e) {
+                e.preventDefault();
+                // Calculate total
+                const priceValue = document.querySelector('#price').value;
+                const quantityValue = document.querySelector('#quantity').value;
+                const totalPrice = priceValue * quantityValue;
+                
+                let obj = {
+                    client: document.querySelector('#client').value,
+                    product: document.querySelector('#product').value,
+                    price: priceValue,
+                    quantity: quantityValue,
+                    total: totalPrice
+                };
+                ipcRenderer.send('sale:insertData', obj);  //send to main.js
+            }
+
+            // Submit and add a sale
+            // document.querySelector('#btnSubmit').addEventListener('click', function(e){
+            //     e.preventDefault();
+            //     // Calculate total
+            //     const priceValue = document.querySelector('#price').value;
+            //     const quantityValue = document.querySelector('#quantity').value;
+            //     const totalPrice = priceValue * quantityValue;
+                
+            //     let obj = {
+            //         client: document.querySelector('#client').value,
+            //         product: document.querySelector('#product').value,
+            //         price: priceValue,
+            //         quantity: quantityValue,
+            //         total: totalPrice
+            //     };
+            //     ipcRenderer.send('sale:insertData', obj);  //send to main.js
+            // })
+
+            // Cancel add window
+            const remote = require('electron').remote;
+            document.querySelector('#btnCancel').addEventListener('click', function(e){
+                e.preventDefault();
+                var window = remote.getCurrentWindow();
+                window.close()
+            })
+        </script>
+    </body>
+</html>

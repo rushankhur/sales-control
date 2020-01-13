@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+
+#groupBtn{
+    background: #443e3e;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#backgroundToolbar, #groupBtn, #backgroundBtnGoup{
+    background: #443e3e;
+    border-color: #443e3e;
+    font-family: 'Nunito Sans', sans-serif;
+    text-decoration:none
+}
+#backgroundTR{
+    background: #4ca7ee;
+    border-color: rgb(124, 40, 1);
+    color: #003c72;
+    font-size: 20px;
+    text-align: center;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: bold;
+}
+#backgroundSideBar{
+    background: #4ca7ee;
+    border-color: #4ca7ee;
+    color: #003c72;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#backgroundListButton{
+    background: #0e75f5;
+    border-color: #2a87fa;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+#backgroundWindowsContent, #backgroundPaneGroup{
+    background: #bde2fc;
+    border-color: #bde2fc;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#btnTAB{
+    background-color: #0e75f5;
+    border-color: #2a87fa;
+    color: #000000;
+    font-family: 'Nunito Sans', sans-serif;
+    text-decoration:none;
+    font-weight: bold;
+}
+#btnAction{
+    background: rgb(252, 212, 193);
+    border-color: #FF9B6E;
+    color: #000000;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#title, #footer{
+    font-size: 20px;
+    text-align: center;
+    background: #443e3e;
+    border-color: #165C9B;
+    color: #FF9B6E;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#btnInfo{
+    color: #0e75f5;
+    margin-right: 20%;
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+}
+#splashScreen{
+    position: fixed;
+    width: 100%;
+    min-height: 100%;
+    left: 0;
+    top: 0;
+    transform: translateX(-50%) translateY(-50%);
+    font-family: 'Nunito Sans', sans-serif;
+}
+.pane-body{
+    padding: 1.5rem
+}
+h3 {
+    margin-top: 0;
+}
+#modal_client{
+    position: fixed;
+    width: 100%;
+    min-height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: rgb(249, 125, 69);
+    font-weight: bold;
+
+    z-index: 9000;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#modal_client .wrap{
+    background: rgba(87, 138, 183, 0.699);
+    font-family: 'Nunito Sans', sans-serif;
+}
+#modal_client input{
+    color:  #165C9B;
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+#modal_product{
+    position: fixed;
+    width: 100%;
+    min-height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: rgb(249, 125, 69);
+    z-index: 9000;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#modal_product .wrap{
+    background: rgba(87, 138, 183, 0.699);
+}
+#modal_product input{
+    color:  #165C9B;
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+#modal_sale{
+    position: fixed;
+    width: 100%;
+    min-height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: rgb(249, 125, 69);
+    z-index: 9000;
+    font-family: 'Nunito Sans', sans-serif;
+}
+#modal_sale .wrap{
+    background: rgba(87, 138, 183, 0.699);
+    font-family: 'Nunito Sans', sans-serif;
+}
+#modal_sale select, input{
+    color:  #165C9B;
+    font-family: 'Nunito Sans', sans-serif;
+}

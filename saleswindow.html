@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sales Control</title>
+    <link rel="stylesheet" href="css/photon.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div class="window">
+        <!-- Menu -->
+        <header class="toolbar toolbar-header" id="backgroundToolbar">
+            <h1 class="title" id="title">Sales Report</h1>
+            <div class="toolbar-actions" id="groupBtn">
+                <div class="btn-group" id="backgroundBtnGoup">
+                    <a class="btn btn-default" href="mainwindow.html" id="btnTAB">
+                        <span class="fa fa-address-book"></span>
+                        CLIENTS
+                    </a>
+                    <a class="btn btn-default" href="productswindow.html" id="btnTAB">
+                        <span class="fa fa-shopping-bag"></span>
+                        PRODUCTS
+                    </a>
+                    <a class="btn btn-default active" href="saleswindow.html" id="btnTAB">
+                        <span class="fa fa-shopping-basket"></span>
+                        SALES
+                    </a>
+                </div>
+
+                <button class="btn btn-default btn-default" style="position: absolute;right:0" id="btnAddSale">
+                    <span class="fa fa-cart-plus"></span>
+                    ADD SALE
+                </button>
+            </div>
+        </header>
+        <div class="window-content" id="backgroundWindowsContent">
+            <div class="pane-group" id="backgroundPaneGroup">
+                <div class="pane" id="backgroundPane">
+                    <table class="table table-striped" id="backgroundLightColor">
+                        <thead>
+                            <tr id="backgroundTR">
+                                <th id="backgroundTR">Client</th>
+                                <th id="backgroundTR">Product</th>
+                                <th id="backgroundTR">Price</th>
+                                <th id="backgroundTR">Quantity</th>
+                                <th id="backgroundTR">Total</th>
+                                <th id="backgroundTR"></th>
+                                <th id="backgroundTR"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>  
+        const electron = require('electron')
+        const {ipcRenderer} = electron
+        const sqlite3 = require('sqlite3');
+
+        const knex = require('knex')({
+            client: 'sqlite3',
+            connection: {
+                filename: './salescontrol.db'
+            },
+            useNullAsDefault: true
+        });
+
+        
+        const findSales = async(req, res) => {
+            try {
+                let result = knex.select().from("sales")
+                return result;
+            } catch(e) {
+                console.error(e);
+            };
+        }
+
+        findSales().then((rows) => {
+            displaySales(rows);
+        })
+
+
+        function displaySales(rows) {
+            const tbody = document.getElementById('tbody');
+            const tbodyInit = document.getElementsByTagName('tbody')[0];
+            tbodyInit.innerHTML = '';
+
+            for(var i = 0; i < rows.length; i ++) {
+                const tr = document.createElement('tr');
+                let keyArr = ['client', 'product', 'price', 'quantity', 'total'];
+                for(var j = 0; j < keyArr.length; j++) {
+                    const itemText = document.createTextNode(rows[i][keyArr[j]]);
+                    const td = document.createElement('td');
+                    td.appendChild(itemText);
+                    tr.appendChild(td);
+                }
+                const tdEditSale = document.createElement('td');
+                const editSaleButton = document.createElement("button");
+                editSaleButton.innerHTML = 'Edit Price';
+                editSaleButton.className = 'btn btn-primary edit-btn';
+                editSaleButton.setAttribute("id", `${rows[i]['id']}`);
+                tdEditSale.appendChild(editSaleButton);
+                tr.appendChild(tdEditSale);
+                tbody.appendChild(tr);
+
+                const tdDeleteSale = document.createElement('td');
+                const deleteSaleButton = document.createElement("button");
+                deleteSaleButton.innerHTML = 'Del';
+                deleteSaleButton.className = 'btn btn-negative del-btn';
+                deleteSaleButton.setAttribute("id", `${rows[i]['id']}`);
+                tdDeleteSale.appendChild(deleteSaleButton);
+                tr.appendChild(tdDeleteSale);
+                tbody.appendChild(tr);
+            }
+
+            // Edit a sale
+            let editSaleButtons = document.getElementsByClassName('edit-btn');
+            for(var i = 0; i < editSaleButtons.length; i++) {
+                editSaleButtons[i].addEventListener('click', (e) => {
+                //console.log(e.target.id)
+                ipcRenderer.send('sale:editbyId', e.target.id);
+                });
+            }
+
+            // Delete a sale
+            let delSaleButtons = document.getElementsByClassName('del-btn');
+            for(var i = 0; i < delSaleButtons.length; i++) {
+            delSaleButtons[i].addEventListener('click', (e) => {
+                const confirmRes = confirm("Are you sure?");
+                if(confirmRes) {
+                ipcRenderer.send('sale:deletebyId', e.target.id);
+                }
+            });
+            }
+        }
+        
+        // Display sales after adding a new sale
+        ipcRenderer.on('sale:add', function(e, rows){
+            displaySales(rows);
+            })
+
+        // Open addSaleWindow
+        document.querySelector('#btnAddSale').addEventListener('click', function(){
+            ipcRenderer.send('sale:add', true);
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Sales Control</title>
+  <link rel="stylesheet" href="css/photon.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito+Sans" rel="stylesheet">
+  <!-- Hide id column -->
+  <style>
+    #backgroundLightColor td:nth-child(-n+1) {
+    display: none;
+    }
+  </style>
+</head>
+
+<body>      
+  <div class="window">
+    <!-- Menu -->
+    <header class="toolbar toolbar-header" id="backgroundToolbar">
+      <h1 class="title" id="title">Clients</h1>
+      <div class="toolbar-actions" id="groupBtn">
+        <div class="btn-group" id="backgroundBtnGoup">
+          <a class="btn btn-default active" href="mainwindow.html" id="btnTAB">
+            <span class="fa fa-address-book"></span>
+            CLIENTS
+          </a>
+          <a class="btn btn-default" href="productswindow.html" id="btnTAB">
+            <span class="fa fa-shopping-bag"></span>
+            PRODUCTS
+          </a>
+          <a class="btn btn-default" href="saleswindow.html" id="btnTAB">
+            <span class="fa fa-shopping-basket"></span>
+            SALES
+          </a>
+        </div>
+        <button class="btn btn-default btn-default" style="position: absolute;right:0" id="btnAddClient">
+          <span class="fa fa-user-plus"></span>
+          ADD CLIENT
+        </button>
+      </div>
+    </header>
+
+    <div class="window-content" id="backgroundWindowsContent">
+      <div class="pane-group" id="backgroundPaneGroup">
+        <div class="pane" id="backgroundPane">
+          <table class="table table-striped" id="backgroundLightColor">
+            <thead>
+              <tr id="backgroundTR">
+                <th id="backgroundTR">Name</th>
+                <th id="backgroundTR">Phone Number</th>
+                <th id="backgroundTR">Email</th>
+                <th id="backgroundTR"></th>
+                <th id="backgroundTR"></th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>  
+        const electron = require('electron')
+        const {ipcRenderer} = electron
+        const sqlite3 = require('sqlite3');
+
+        const knex = require('knex')({
+            client: 'sqlite3',
+            connection: {
+                filename: './salescontrol.db'
+            },
+            useNullAsDefault: true
+        });
+
+       
+        const findClients = async(req, res) => {
+            try {
+                let result = knex.select().from("clients")
+                return result;
+            } catch(e) {
+                console.error(e);
+            };
+        }
+
+        findClients().then((rows) => {
+          displayClients(rows);
+        })
+
+
+        function displayClients(rows) {
+            const tbody = document.getElementById('tbody');
+            const tbodyInit = document.getElementsByTagName('tbody')[0];
+            tbodyInit.innerHTML = '';
+
+            for(var i = 0; i < rows.length; i ++) {
+              const tr = document.createElement('tr');
+              let keyArr = ['id','name', 'phone', 'email'];
+              for(var j = 0; j < keyArr.length; j++) {
+                const itemText = document.createTextNode(rows[i][keyArr[j]]);
+                const td = document.createElement('td');
+                td.appendChild(itemText);
+                tr.appendChild(td);
+              }
+              const tdEditClient = document.createElement('td');
+              const editClientButton = document.createElement("button");
+              editClientButton.innerHTML = 'Edit';
+              editClientButton.className = 'btn btn-primary edit-btn';
+              editClientButton.setAttribute("id", `${rows[i]['id']}`);
+              tdEditClient.appendChild(editClientButton);
+              tr.appendChild(tdEditClient);
+              tbody.appendChild(tr);
+
+              const tdDeleteClient = document.createElement('td');
+              const deleteClientButton = document.createElement("button");
+              deleteClientButton.innerHTML = 'Del';
+              deleteClientButton.className = 'btn btn-negative del-btn';
+              deleteClientButton.setAttribute("id", `${rows[i]['id']}`);
+              tdDeleteClient.appendChild(deleteClientButton);
+              tr.appendChild(tdDeleteClient);
+              tbody.appendChild(tr);
+          }
+
+          // Edit a client
+          let editClientButtons = document.getElementsByClassName('edit-btn');
+          for(var i = 0; i < editClientButtons.length; i++) {
+              editClientButtons[i].addEventListener('click', (e) => {
+                //console.log(e.target.id)
+                ipcRenderer.send('client:editbyId', e.target.id);
+              });
+          }
+
+          // Delete a client
+          let delClientButtons = document.getElementsByClassName('del-btn');
+          for(var i = 0; i < delClientButtons.length; i++) {
+            delClientButtons[i].addEventListener('click', (e) => {
+              const confirmRes = confirm("Are you sure?");
+              if(confirmRes) {
+                ipcRenderer.send('client:deletebyId', e.target.id);
+              }
+            });
+          }
+        }
+      
+        // Display clients after adding a new client
+        ipcRenderer.on('client:add', function(e, rows){
+          displayClients(rows);
+          })
+
+        // Open addClientWindow
+        document.querySelector('#btnAddClient').addEventListener('click', function(){
+          ipcRenderer.send('client:add', true);
+        })
+    </script>
+</body>
+</html>
